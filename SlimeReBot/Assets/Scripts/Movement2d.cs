@@ -1,22 +1,7 @@
 ﻿using UnityEngine;
 
-public class Movement2d : MonoBehaviour
+public class Movement2d : MovementController
 {
-    [SerializeField]
-    private Transform groundCheck;
-    [SerializeField]
-    private LayerMask groundLayer;
-
-    public Transform GroundCheck { get { return groundCheck; } set { groundCheck = value; } }
-
-    [SerializeField]
-    private Rigidbody2D rb;
-    [SerializeField]
-    private float speed;
-    [SerializeField]
-    private float jumpHeight;
-    [SerializeField]
-    private Vector2 knockBack;
     [SerializeField]
     private AnimationController animator;
     [SerializeField]
@@ -25,12 +10,24 @@ public class Movement2d : MonoBehaviour
     private Player p;
 
     public float JumpHeight { get { return jumpHeight; } set { jumpHeight = value; } }
+    public Transform GroundCheck { get { return groundCheck; } set { groundCheck = value; } }
 
     private float horizontalInput;
 
     private Vector2 slopePrepNormalized;
 
-    public bool IsGrounded { get { return Movement2d.CheckSphere(groundCheck, 0.15f, groundLayer);} }
+    private bool isJumping;
+
+    public Collider2D IsGrounded { get { return CheckSphere(groundCheck, groundLayer);} }
+    public bool IsFalling { get { return rb.velocity.y < 0 && !IsGrounded; } }
+    public bool IsJumping { get { return isJumping && !IsFalling; } set { isJumping = value; } }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.DrawSphere(groundCheck.transform.position, 0.05f);
+        Gizmos.DrawLine(groundCheck.position, groundCheck.position + new Vector3(0.25f, 0, 0));
+        Gizmos.DrawLine(groundCheck.position, groundCheck.position + new Vector3(-0.25f, 0, 0));
+    }
 
     private void Start()
     {
@@ -38,18 +35,23 @@ public class Movement2d : MonoBehaviour
 
     void Update()
     {
+        if (IsJumping && Input.GetAxis("Jump") <= 0)
+        {
+            StopJump();
+        }
+
         if (!p.CanMove)
         {
             horizontalInput = 0;
             return;
         }
 
-        horizontalInput = Input.GetAxis("Horizontal");
-
-        if (IsGrounded && Input.GetAxis("Jump") > 0)
+        if (IsGrounded && !IsJumping && Input.GetAxis("Jump") > 0)
         {
             Jump(jumpHeight);
         }
+
+        horizontalInput = Input.GetAxis("Horizontal");
     }
 
     private void FixedUpdate()
@@ -77,6 +79,13 @@ public class Movement2d : MonoBehaviour
         jumpSound.Play();
         rb.velocity = new Vector2(rb.velocity.x, jumpHeight);
         animator.SetJumping();
+        IsJumping = true;
+    }
+
+    public void StopJump()
+    {
+        rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y / 4);
+        IsJumping = false;
     }
 
     public void GroundPound()
@@ -88,7 +97,7 @@ public class Movement2d : MonoBehaviour
     public void KnockBack(bool isFromRight)
     {
         int direction = isFromRight ? -1 : 1;
-        rb.velocity = new Vector2(knockBack.x * direction, knockBack.y);
+        rb.velocity = new Vector2(knockBack.x * direction - rb.velocity.x , knockBack.y);
     }
 
     public void ResetPosition()
@@ -123,8 +132,13 @@ public class Movement2d : MonoBehaviour
         return horizontalInput;
     }
 
-    public static bool CheckSphere(Transform groundCheck, float radius, LayerMask groundLayer) {
-        return Physics2D.OverlapCircle(groundCheck.position, radius, groundLayer);
+    public static Collider2D CheckSphere(Transform groundCheck, LayerMask groundLayer, float size = 0.05f) {
+        return Physics2D.OverlapCircle(groundCheck.position, size, groundLayer);
+    }
+
+    public static Collider2D CheckBox(Transform groundCheck, LayerMask groundLayer, float size = 0.25f)
+    {
+        return Physics2D.OverlapBox(groundCheck.position, new Vector2(size, size), groundLayer);
     }
 
     public bool CheckSlope()

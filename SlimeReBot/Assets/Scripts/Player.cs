@@ -43,7 +43,7 @@ public class Player : MonoBehaviour
 
     public void GotHit(int damage, bool isFromRight, float knockBackDuration)
     {
-        hitSound.Play();
+        hitSound.PlayDelayed(0);
         canMove = false;
         onKnockBack = true;
         movement2D.KnockBack(isFromRight);
