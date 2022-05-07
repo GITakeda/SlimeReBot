@@ -3,36 +3,24 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour
+public class Enemy : MovementController
 {
-    [SerializeField]
-    private float speed;
-
-    [SerializeField]
-    private float knockBackDuration;
-
-    [SerializeField]
-    private Rigidbody2D rb;
-
-    [SerializeField]
-    private Transform walkingCheck;
-
-    [SerializeField]
-    private Transform groundCheck;
-
-    [SerializeField]
-    private Transform wallCheck;
-
-    [SerializeField]
-    private LayerMask groundLayer;
-
     [SerializeField]
     private Animator animator;
 
     private int flipped = 1;
     private bool canMove = true;
 
-    public bool IsGrounded { get { return Movement2d.CheckSphere(groundCheck, 0.05f, groundLayer); } }
+    public bool IsGrounded { get { return Movement2d.CheckSphere(groundCheck, groundLayer); } }
+
+    public bool IsFacingWall { get { return Movement2d.CheckSphere(wallCheck, groundLayer, 0.1f);  } }
+
+    public RaycastHit2D CanFall { get { return Physics2D.Raycast(walkingCheck.position, Vector2.down, 3f, groundLayer); } }
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.DrawLine(walkingCheck.position, CanFall.point);
+    }
 
     void Update()
     {
@@ -43,14 +31,14 @@ public class Enemy : MonoBehaviour
             return;
         }
 
-        if(!Movement2d.CheckSphere(walkingCheck, 0.05f, groundLayer) || Movement2d.CheckSphere(wallCheck, 0.05f, groundLayer))
+        if(IsFacingWall || !CanFall)
         {
             InvertDirection();
         }
 
         rb.velocity = new Vector2(speed * flipped, rb.velocity.y);
 
-        this.transform.rotation.Normalize();
+        transform.rotation.Normalize();
     }
 
     private void OnCollisionEnter2D(Collision2D collision)

@@ -24,7 +24,7 @@ public class AnimationController : MonoBehaviour
     {
         Vector2 velocity = movement2D.GetVelocity();
         float horizontalInput = Input.GetAxis("Horizontal");
-        bool falling = velocity.y < 0 && !movement2D.IsGrounded;
+        bool falling = movement2D.IsFalling;
 
         animator.SetBool("Falling", falling);
 
