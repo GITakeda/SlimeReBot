@@ -18,9 +18,16 @@ public class Movement2d : MovementController
 
     private bool isJumping;
 
-    public bool IsGrounded { get { return CheckSphere(groundCheck, groundLayer);} }
+    public Collider2D IsGrounded { get { return CheckSphere(groundCheck, groundLayer);} }
     public bool IsFalling { get { return rb.velocity.y < 0 && !IsGrounded; } }
-    public bool IsJumping { get { return isJumping; } set { isJumping = value; } }
+    public bool IsJumping { get { return isJumping && !IsFalling; } set { isJumping = value; } }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.DrawSphere(groundCheck.transform.position, 0.05f);
+        Gizmos.DrawLine(groundCheck.position, groundCheck.position + new Vector3(0.25f, 0, 0));
+        Gizmos.DrawLine(groundCheck.position, groundCheck.position + new Vector3(-0.25f, 0, 0));
+    }
 
     private void Start()
     {
@@ -125,8 +132,13 @@ public class Movement2d : MovementController
         return horizontalInput;
     }
 
-    public static bool CheckSphere(Transform groundCheck, LayerMask groundLayer, float size = 0.05f) {
+    public static Collider2D CheckSphere(Transform groundCheck, LayerMask groundLayer, float size = 0.05f) {
         return Physics2D.OverlapCircle(groundCheck.position, size, groundLayer);
+    }
+
+    public static Collider2D CheckBox(Transform groundCheck, LayerMask groundLayer, float size = 0.25f)
+    {
+        return Physics2D.OverlapBox(groundCheck.position, new Vector2(size, size), groundLayer);
     }
 
     public bool CheckSlope()

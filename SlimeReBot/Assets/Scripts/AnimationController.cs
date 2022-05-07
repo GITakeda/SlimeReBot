@@ -28,10 +28,10 @@ public class AnimationController : MonoBehaviour
 
         animator.SetBool("Falling", falling);
 
-        if (falling)
-        {
-            animator.SetBool("Jumping", false);
-        }
+        //if (falling)
+        //{
+            animator.SetBool("Jumping", movement2D.IsJumping && !movement2D.IsGrounded);
+        //}
 
         animator.SetBool("Walking", velocity.normalized.x != 0);
 
