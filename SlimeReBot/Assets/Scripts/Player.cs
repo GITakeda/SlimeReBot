@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public abstract class Player : MonoBehaviour
 {
     public Vector2 lastPosition;
     [SerializeField]
@@ -20,24 +20,27 @@ public class Player : MonoBehaviour
     public bool CanBeHurt { get { return canBeHurt; } set { canBeHurt = value; } }
     public bool CanMove { get { return canMove; } set { canMove = value; } }
     public bool OnKnockBack { get { return onKnockBack; } set { onKnockBack = value; } }
-    
 
-    void Update()
+    public void Update()
     {
         if (movement2D.IsGrounded)
         {
-            lastPosition = this.transform.position;
+            lastPosition = transform.position;
         }
 
-        if (this.transform.position.y < -25)
+        if (transform.position.y < -25)
         {
             LastPoint();
         }
+
+        HandleInput();
     }
+
+    protected abstract void HandleInput();
 
     void LastPoint()
     {
-        this.transform.position = lastPosition;
+        transform.position = lastPosition;
         movement2D.SetVelocity(new Vector2(0,0));
     }
 

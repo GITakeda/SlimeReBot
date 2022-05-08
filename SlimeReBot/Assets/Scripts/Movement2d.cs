@@ -8,6 +8,14 @@ public class Movement2d : MovementController
     private AudioSource jumpSound;
     [SerializeField]
     private Player p;
+    [SerializeField]
+    private PhysicsMaterial2D friction;
+    [SerializeField]
+    private PhysicsMaterial2D noFriction;
+    [SerializeField]
+    protected LayerMask slopeMask;
+    [SerializeField]
+    private Vector2 groundCheckSize;
 
     public float JumpHeight { get { return jumpHeight; } set { jumpHeight = value; } }
     public Transform GroundCheck { get { return groundCheck; } set { groundCheck = value; } }
@@ -16,21 +24,22 @@ public class Movement2d : MovementController
 
     private Vector2 slopePrepNormalized;
 
-    private bool isJumping;
+    public bool normalizeSlope = true;
 
-    public Collider2D IsGrounded { get { return CheckSphere(groundCheck, groundLayer);} }
+    private bool isJumping = false;
+
+    private bool materialCanBeChanged = true;
+
+    public bool IsGrounded { get { return CheckBox(groundCheck, groundLayer, groundCheckSize);} }
     public bool IsFalling { get { return rb.velocity.y < 0 && !IsGrounded; } }
     public bool IsJumping { get { return isJumping && !IsFalling; } set { isJumping = value; } }
 
+    public bool MaterialCanBeChanged { get { return materialCanBeChanged;  } set { materialCanBeChanged = value; }  }
+
     private void OnDrawGizmosSelected()
     {
-        Gizmos.DrawSphere(groundCheck.transform.position, 0.05f);
-        Gizmos.DrawLine(groundCheck.position, groundCheck.position + new Vector3(0.25f, 0, 0));
-        Gizmos.DrawLine(groundCheck.position, groundCheck.position + new Vector3(-0.25f, 0, 0));
-    }
-
-    private void Start()
-    {
+        Gizmos.DrawWireCube(groundCheck.transform.position, new Vector2(groundCheckSize.x, groundCheckSize.y));
+        CheckSlope();
     }
 
     void Update()
@@ -66,12 +75,30 @@ public class Movement2d : MovementController
             }
         }
 
-        //if (CheckSlope() && !p.Rolling && IsGrounded && rb.velocity.y < jumpHeight)
-        //{
-        //    newVelocity = new Vector2(-horizontalInput * speed * slopePrepNormalized.x, -horizontalInput * speed * slopePrepNormalized.y);
-        //}
+        if (normalizeSlope && CheckSlope().x != 0 && IsGrounded && rb.velocity.y < 0)
+        {
+            newVelocity = new Vector2(-horizontalInput * speed * slopePrepNormalized.x, -horizontalInput * speed * slopePrepNormalized.y);
+        }
+
+        if (CheckSlope().x != 0 && horizontalInput == 0)
+        {
+            SetFriction();
+        }
+
+        if (horizontalInput != 0)
+        {
+            SetNoFriction();
+        }
 
         rb.velocity = newVelocity;
+    }
+
+    private void SetMaterial(PhysicsMaterial2D material)
+    {
+        if (materialCanBeChanged)
+        {
+            rb.sharedMaterial = material;
+        }
     }
 
     public void Jump(float jumpHeight)
@@ -136,34 +163,42 @@ public class Movement2d : MovementController
         return Physics2D.OverlapCircle(groundCheck.position, size, groundLayer);
     }
 
-    public static Collider2D CheckBox(Transform groundCheck, LayerMask groundLayer, float size = 0.25f)
+    public static bool CheckBox(Transform groundCheck, LayerMask groundLayer, Vector2 size)
     {
-        return Physics2D.OverlapBox(groundCheck.position, new Vector2(size, size), groundLayer);
+        return Physics2D.OverlapBox(groundCheck.position, new Vector2(size.x, size.y), 0f, groundLayer);
     }
 
-    public bool CheckSlope()
+    public Vector2 CheckSlope()
     {
         Vector2 checkPos = this.transform.position - new Vector3(0, p.GetActiveCollider().size.y / 2);
-        RaycastHit2D hit = Physics2D.Raycast(checkPos, Vector2.down, 0.5f, groundLayer);
+        RaycastHit2D hit = Physics2D.Raycast(checkPos, Vector2.down, 0.5f, slopeMask);
 
         Vector2 perpendicular;
-        float downAngle = 0;
 
         if (hit)
         {
             perpendicular = Vector2.Perpendicular(hit.normal);
-            downAngle = Vector2.Angle(hit.normal, Vector2.up);
 
             Debug.DrawRay(hit.point, hit.normal, Color.green);
 
             slopePrepNormalized = perpendicular.normalized;
         }
 
-        return downAngle != 0;
+        return hit.normal;
     }
 
     public void SetVelocity(Vector2 v)
     {
         rb.velocity = v;
+    }
+
+    public void SetFriction()
+    {
+        SetMaterial(friction);
+    }
+
+    public void SetNoFriction()
+    {
+        SetMaterial(noFriction);
     }
 }

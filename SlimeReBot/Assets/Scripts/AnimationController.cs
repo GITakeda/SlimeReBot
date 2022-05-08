@@ -11,36 +11,25 @@ public class AnimationController : MonoBehaviour
     private Movement2d movement2D;
 
     [SerializeField]
-    private Player p;
-
-    [SerializeField]
     private SpriteRenderer sp;
-
-    void Start()
-    {
-    }
 
     void Update()
     {
         Vector2 velocity = movement2D.GetVelocity();
-        float horizontalInput = Input.GetAxis("Horizontal");
         bool falling = movement2D.IsFalling;
 
         animator.SetBool("Falling", falling);
 
-        //if (falling)
-        //{
-            animator.SetBool("Jumping", movement2D.IsJumping && !movement2D.IsGrounded);
-        //}
-
+        animator.SetBool("Jumping", movement2D.IsJumping && !movement2D.IsGrounded);
+        
         animator.SetBool("Walking", velocity.normalized.x != 0);
 
-        if (velocity.x < 0)
+        if (velocity.x < -0.1)
         {
             sp.flipX = true;
         }
 
-        if (velocity.x > 0)
+        if (velocity.x > 0.1)
         {
             sp.flipX = false;
         }
