@@ -9,13 +9,16 @@ public class FollowingCamera2D : MonoBehaviour
     private Movement2d mov2d;
 
     [SerializeField]
+    private Vector2 offset;
+
+    [SerializeField]
     [Range(0, 1)]
     public float cameraSpeed = 0.125f;
     
 
     private void FixedUpdate()
     {
-        Vector3 desiredPos = mov2d.GetPosition();
+        Vector3 desiredPos = mov2d.GetPosition() + offset;
         Vector3 newPos = Vector3.Lerp(transform.position, desiredPos, cameraSpeed);
         newPos.z = transform.position.z;
 

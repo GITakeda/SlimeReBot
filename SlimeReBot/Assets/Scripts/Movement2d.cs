@@ -85,7 +85,7 @@ public class Movement2d : MovementController
             SetFriction();
         }
 
-        if (horizontalInput != 0)
+        if (horizontalInput != 0 || IsJumping)
         {
             SetNoFriction();
         }

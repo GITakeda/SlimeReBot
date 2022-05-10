@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8869463548500968110}
   - component: {fileID: 459521955039803426}
   - component: {fileID: 6821781727227610975}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Slope_Test_2 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -28,6 +28,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -43,10 +44,12 @@ SpriteRenderer:
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -68,11 +71,10 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -145021581
+  m_SortingLayer: 2
   m_SortingOrder: 0
-  m_Sprite: {fileID: -3664773738192972837, guid: 4f8bc6c9a260c95428e961ff9da921a4,
-    type: 3}
+  m_Sprite: {fileID: 556104804, guid: 020a455771ab8054bb0bea03bdb8f73f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

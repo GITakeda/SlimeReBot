@@ -176,7 +176,7 @@ CapsuleCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7343001682871465092}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Density: 1
   m_Material: {fileID: 0}
   m_IsTrigger: 0
@@ -455,7 +455,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lastPosition: {x: 0, y: 0}
   movement2D: {fileID: 7343001682871465089}
-  slimeCollider: {fileID: 7343001682871465102}
+  slimeCollider: {fileID: 0}
   hitSound: {fileID: 997658421}
   rollingCollider: {fileID: 939436725}
   rollingAnimation: {fileID: 9100000, guid: cdc0370c2282a894a9f3ee108bb26253, type: 2}
