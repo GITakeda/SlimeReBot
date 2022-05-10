@@ -146,7 +146,7 @@ public class Movement2d : MovementController
 
     public Vector2 GetPosition()
     {
-        return this.transform.position;
+        return transform.position;
     }
 
     public void ResetVelocity()
