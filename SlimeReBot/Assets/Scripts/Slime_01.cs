@@ -62,7 +62,7 @@ public class Slime_01 : Player
             Rolling = true;
             animator.runtimeAnimatorController = rollingAnimation;
             state = State.normal;
-            movement2D.normalizeSlope = false;
+            movement2D.NormalizeSlope = false;
             movement2D.SetNoFriction();
             movement2D.MaterialCanBeChanged = false;
         }
@@ -70,7 +70,7 @@ public class Slime_01 : Player
         {
             Rolling = false;
             animator.runtimeAnimatorController = defaultAnimation;
-            movement2D.normalizeSlope = true;
+            movement2D.NormalizeSlope = true;
             movement2D.MaterialCanBeChanged = true;
         }
     }

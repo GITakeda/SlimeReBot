@@ -22,18 +22,21 @@ public class Movement2d : MovementController
 
     private float horizontalInput;
 
+    #region slopes
     private Vector2 slopePrepNormalized;
+    private bool normalizeSlope = true;
+    public bool NormalizeSlope { get { return normalizeSlope; } set { normalizeSlope = value; } }
+    private bool materialCanBeChanged = true;
+    private bool isOnSlope = false;
+    private Vector2 slopeCheckPos;
+    #endregion
 
-    public bool normalizeSlope = true;
+    private Vector2 debugPoint;
 
     private bool isJumping = false;
-
-    private bool materialCanBeChanged = true;
-
-    public bool IsGrounded { get { return CheckBox(groundCheck, groundLayer, groundCheckSize);} }
+    public bool IsGrounded { get { return CheckBox(groundCheck, groundLayer, p.GetActiveCollider().size - new Vector2(0.02f, 0), transform.position - new Vector3(0, 0.1f, 0));} }
     public bool IsFalling { get { return rb.velocity.y < 0 && !IsGrounded; } }
     public bool IsJumping { get { return isJumping && !IsFalling; } set { isJumping = value; } }
-
     public bool MaterialCanBeChanged { get { return materialCanBeChanged;  } set { materialCanBeChanged = value; }  }
 
     private void OnDrawGizmosSelected()
@@ -66,21 +69,26 @@ public class Movement2d : MovementController
     private void FixedUpdate()
     {
         Vector2 newVelocity = new Vector2(horizontalInput * speed, rb.velocity.y);
+        CheckSlope();
 
         if (!p.CanMove)
         {
             Vector2 lerped = Vector2.Lerp(rb.velocity, new Vector2(0, rb.velocity.y), 0.01f);
-            if (lerped.x > 0.01 || lerped.x < -0.01) {
+            if (lerped.x > 0.01 || lerped.x < -0.01)
+            {
                 newVelocity = lerped;
             }
+
+            rb.velocity = newVelocity;
+            return;
         }
 
-        if (normalizeSlope && CheckSlope().x != 0 && IsGrounded && rb.velocity.y < 0)
+        if (isOnSlope && IsGrounded && !IsJumping)
         {
             newVelocity = new Vector2(-horizontalInput * speed * slopePrepNormalized.x, -horizontalInput * speed * slopePrepNormalized.y);
         }
 
-        if (CheckSlope().x != 0 && horizontalInput == 0)
+        if (isOnSlope && horizontalInput == 0)
         {
             SetFriction();
         }
@@ -89,16 +97,9 @@ public class Movement2d : MovementController
         {
             SetNoFriction();
         }
+        
 
         rb.velocity = newVelocity;
-    }
-
-    private void SetMaterial(PhysicsMaterial2D material)
-    {
-        if (materialCanBeChanged)
-        {
-            rb.sharedMaterial = material;
-        }
     }
 
     public void Jump(float jumpHeight)
@@ -115,12 +116,6 @@ public class Movement2d : MovementController
         IsJumping = false;
     }
 
-    public void GroundPound()
-    {
-        horizontalInput = 0;
-        rb.velocity = new Vector2(0, -jumpHeight * 2);
-    }
-
     public void KnockBack(bool isFromRight)
     {
         int direction = isFromRight ? -1 : 1;
@@ -132,59 +127,48 @@ public class Movement2d : MovementController
         rb.velocity = new Vector2(0, 0); 
     }
 
-    public Vector2 GetVelocity()
-    {
-        Vector2 res = rb.velocity;
-
-        if(!(res.x > 0.01 || res.x < -0.01))
-        {
-            res.x = 0;
-        }
-
-        return res;
-    }
-
-    public Vector2 GetPosition()
-    {
-        return transform.position;
-    }
-
     public void ResetVelocity()
     {
         rb.velocity = new Vector2(0, rb.velocity.y);
-    }
-
-    public float GetHorizontalInput()
-    {
-        return horizontalInput;
     }
 
     public static Collider2D CheckSphere(Transform groundCheck, LayerMask groundLayer, float size = 0.05f) {
         return Physics2D.OverlapCircle(groundCheck.position, size, groundLayer);
     }
 
-    public static bool CheckBox(Transform groundCheck, LayerMask groundLayer, Vector2 size)
+    public bool CheckBox(Transform groundCheck, LayerMask groundLayer, Vector2 size, Vector2 pos)
     {
-        return Physics2D.OverlapBox(groundCheck.position, new Vector2(size.x, size.y), 0f, groundLayer);
+        Collider2D hit = Physics2D.OverlapCapsule(pos, new Vector2(size.x, size.y), CapsuleDirection2D.Horizontal, 0f, groundLayer);
+        if (hit)
+        {
+            slopeCheckPos = hit.ClosestPoint(pos);
+        }
+        return hit;
     }
 
     public Vector2 CheckSlope()
     {
-        Vector2 checkPos = this.transform.position - new Vector3(0, p.GetActiveCollider().size.y / 2);
-        RaycastHit2D hit = Physics2D.Raycast(checkPos, Vector2.down, 0.5f, slopeMask);
+        isOnSlope = false;
+        Vector2 normalReturn = new Vector2();
 
-        Vector2 perpendicular;
+        //Vector2 checkPos = transform.position - new Vector3(0, p.GetActiveCollider().size.y / 2);
+
+        RaycastHit2D hit = Physics2D.Raycast(slopeCheckPos, Vector2.down, 0.5f, slopeMask);
+
+        Debug.DrawRay(hit.point, hit.normal, Color.green);
 
         if (hit)
         {
-            perpendicular = Vector2.Perpendicular(hit.normal);
+            slopePrepNormalized = Vector2.Perpendicular(hit.normal).normalized;
 
-            Debug.DrawRay(hit.point, hit.normal, Color.green);
+            isOnSlope = slopePrepNormalized.x != 0;
 
-            slopePrepNormalized = perpendicular.normalized;
+            normalReturn = hit.normal;
+
+            Debug.DrawRay(hit.point, Vector2.Perpendicular(hit.normal).normalized, Color.black);
         }
 
-        return hit.normal;
+        return normalReturn;
     }
 
     public void SetVelocity(Vector2 v)
@@ -200,5 +184,35 @@ public class Movement2d : MovementController
     public void SetNoFriction()
     {
         SetMaterial(noFriction);
+    }
+
+    public Vector2 GetVelocity()
+    {
+        Vector2 res = rb.velocity;
+
+        if (!(res.x > 0.01 || res.x < -0.01))
+        {
+            res.x = 0;
+        }
+
+        return res;
+    }
+
+    public Vector2 GetPosition()
+    {
+        return transform.position;
+    }
+
+    public float GetHorizontalInput()
+    {
+        return horizontalInput;
+    }
+
+    private void SetMaterial(PhysicsMaterial2D material)
+    {
+        if (materialCanBeChanged)
+        {
+            rb.sharedMaterial = material;
+        }
     }
 }
