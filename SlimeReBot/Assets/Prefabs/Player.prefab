@@ -182,8 +182,8 @@ CapsuleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.0000003212675, y: -0.055013247}
-  m_Size: {x: 0.8721674, y: 0.62737226}
+  m_Offset: {x: 0.00000032095735, y: -0.05761481}
+  m_Size: {x: 0.8721675, y: 0.6325756}
   m_Direction: 1
 --- !u!70 &939436725
 CapsuleCollider2D:
@@ -410,7 +410,7 @@ MonoBehaviour:
   groundCheck: {fileID: 7343001682150117947}
   groundLayer:
     serializedVersion: 2
-    m_Bits: 1792
+    m_Bits: 768
   rb: {fileID: 7343001682871465088}
   speed: 5
   jumpHeight: 10
@@ -423,7 +423,7 @@ MonoBehaviour:
   noFriction: {fileID: 6200000, guid: ea79f313c5f6ee743996e3b0a5aab0bd, type: 2}
   slopeMask:
     serializedVersion: 2
-    m_Bits: 1024
+    m_Bits: 768
   groundCheckSize: {x: 0.5, y: 0.02}
   normalizeSlope: 1
 --- !u!114 &7343001682871465103
