@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AnimationController : MonoBehaviour
+public class MyAnimationController : MonoBehaviour
 {
     [SerializeField]
     Animator animator;
@@ -13,16 +13,13 @@ public class AnimationController : MonoBehaviour
     [SerializeField]
     private SpriteRenderer sp;
 
+    private bool canSetAnimation;
+    public bool CanSetAnimation { get { return canSetAnimation; } set { canSetAnimation = value; } }
+
     void Update()
     {
         Vector2 velocity = movement2D.GetVelocity();
         bool falling = movement2D.IsFalling;
-
-        animator.SetBool("Falling", falling);
-
-        animator.SetBool("Jumping", movement2D.IsJumping && !movement2D.IsGrounded);
-        
-        animator.SetBool("Walking", velocity.normalized.x != 0);
 
         if (velocity.x < -0.1)
         {
@@ -33,10 +30,17 @@ public class AnimationController : MonoBehaviour
         {
             sp.flipX = false;
         }
+
+        if (canSetAnimation)
+        {
+            animator.SetBool("Falling", falling);
+            animator.SetBool("Jumping", movement2D.IsJumping);
+            animator.SetBool("Walking", velocity.normalized.x != 0);
+        }
     }
 
-    public void SetJumping()
+    public void SetBool(string tag, bool value)
     {
-        animator.SetBool("Jumping", true);
+        animator.SetBool(tag, value);
     }
 }

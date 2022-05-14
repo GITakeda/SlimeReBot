@@ -5,7 +5,7 @@ using UnityEngine;
 public class Exit : MonoBehaviour
 {
     [SerializeField]
-    private CircleCollider2D collider;
+    private CircleCollider2D myCollider;
 
     [SerializeField]
     private SpriteRenderer sprite;
@@ -41,7 +41,7 @@ public class Exit : MonoBehaviour
         goEnd.SetActive(GameController.cur.hasRescued);
         Invoke("OnGoEnd", 2f);
         sprite.sprite = openSprite;
-        collider.enabled = true;
+        myCollider.enabled = true;
     }
 
     public void OnGoEnd()

@@ -3,7 +3,7 @@
 public class Movement2d : MovementController
 {
     [SerializeField]
-    private AnimationController animator;
+    private MyAnimationController animator;
     [SerializeField]
     private AudioSource jumpSound;
     [SerializeField]
@@ -29,19 +29,19 @@ public class Movement2d : MovementController
     private bool materialCanBeChanged = true;
     private bool isOnSlope = false;
     private Vector2 slopeCheckPos;
+    private Vector2 lastSlopeCheckPos;
     #endregion
 
-    private Vector2 debugPoint;
-
     private bool isJumping = false;
-    public bool IsGrounded { get { return CheckBox(groundCheck, groundLayer, p.GetActiveCollider().size - new Vector2(0.02f, 0), transform.position - new Vector3(0, 0.1f, 0));} }
-    public bool IsFalling { get { return rb.velocity.y < 0 && !IsGrounded; } }
+
+    private Collider2D isGrounded;
+    public bool IsGrounded { get { return isGrounded; } }
+    public bool IsFalling { get { return GetVelocity().y < 0 && !IsGrounded; } }
     public bool IsJumping { get { return isJumping && !IsFalling; } set { isJumping = value; } }
     public bool MaterialCanBeChanged { get { return materialCanBeChanged;  } set { materialCanBeChanged = value; }  }
 
     private void OnDrawGizmosSelected()
     {
-        Gizmos.DrawWireCube(groundCheck.transform.position, new Vector2(groundCheckSize.x, groundCheckSize.y));
         CheckSlope();
     }
 
@@ -69,6 +69,7 @@ public class Movement2d : MovementController
     private void FixedUpdate()
     {
         Vector2 newVelocity = new Vector2(horizontalInput * speed, rb.velocity.y);
+        CheckGround(groundLayer, p.GetActiveCollider().size, transform.position);
         CheckSlope();
 
         if (!p.CanMove)
@@ -83,7 +84,7 @@ public class Movement2d : MovementController
             return;
         }
 
-        if (isOnSlope && IsGrounded && !IsJumping)
+        if (normalizeSlope && isOnSlope && IsGrounded && !IsJumping)
         {
             newVelocity = new Vector2(-horizontalInput * speed * slopePrepNormalized.x, -horizontalInput * speed * slopePrepNormalized.y);
         }
@@ -106,7 +107,6 @@ public class Movement2d : MovementController
     {
         jumpSound.Play();
         rb.velocity = new Vector2(rb.velocity.x, jumpHeight);
-        animator.SetJumping();
         IsJumping = true;
     }
 
@@ -118,8 +118,7 @@ public class Movement2d : MovementController
 
     public void KnockBack(bool isFromRight)
     {
-        int direction = isFromRight ? -1 : 1;
-        rb.velocity = new Vector2(knockBack.x * direction - rb.velocity.x , knockBack.y);
+        rb.velocity = new Vector2(knockBack.x - rb.velocity.x , knockBack.y);
     }
 
     public void ResetPosition()
@@ -136,24 +135,63 @@ public class Movement2d : MovementController
         return Physics2D.OverlapCircle(groundCheck.position, size, groundLayer);
     }
 
-    public bool CheckBox(Transform groundCheck, LayerMask groundLayer, Vector2 size, Vector2 pos)
+    public bool CheckGround(LayerMask groundLayer, Vector2 size, Vector2 pos)
     {
-        Collider2D hit = Physics2D.OverlapCapsule(pos, new Vector2(size.x, size.y), CapsuleDirection2D.Horizontal, 0f, groundLayer);
-        if (hit)
-        {
-            slopeCheckPos = hit.ClosestPoint(pos);
-        }
+        Vector2 checkSize = size - new Vector2(0.02f, 0);
+        Vector2 checkPos = pos - new Vector2(0, 0.1f);
+
+        Collider2D hit = Physics2D.OverlapCapsule(checkPos,
+            new Vector2(checkSize.x, checkSize.y),
+            CapsuleDirection2D.Horizontal,
+            0f,
+            groundLayer);
+
+        isGrounded = hit;
+
         return hit;
+    }
+
+    private void DefineSlopeCheckPosition(Collider2D groundHit, Vector2 pos)
+    {
+        Vector2 playerPosition = transform.position;
+
+        if (!groundHit)
+        {
+            lastSlopeCheckPos = slopeCheckPos;
+            slopeCheckPos = playerPosition - new Vector2(0, p.GetActiveCollider().size.y / 2);
+            return;
+        }
+
+        Vector2 newSlopeCheckPos = groundHit.ClosestPoint(pos);
+
+        if (!(GetVelocity().y < 0))
+        {
+            lastSlopeCheckPos = slopeCheckPos;
+            slopeCheckPos = newSlopeCheckPos;
+            return;
+        }
+
+        if (
+            (playerPosition - newSlopeCheckPos).x < -0.01f || 
+            (playerPosition - newSlopeCheckPos).x > 0.01f)
+        {
+            lastSlopeCheckPos = slopeCheckPos;
+            slopeCheckPos = newSlopeCheckPos;
+        }
+        else if ((playerPosition - newSlopeCheckPos).y > 0.38f)
+        {
+            slopeCheckPos = lastSlopeCheckPos;
+        }
     }
 
     public Vector2 CheckSlope()
     {
+        DefineSlopeCheckPosition(isGrounded, transform.position);
+
         isOnSlope = false;
         Vector2 normalReturn = new Vector2();
 
-        //Vector2 checkPos = transform.position - new Vector3(0, p.GetActiveCollider().size.y / 2);
-
-        RaycastHit2D hit = Physics2D.Raycast(slopeCheckPos, Vector2.down, 0.5f, slopeMask);
+        RaycastHit2D hit = Physics2D.Raycast(slopeCheckPos, Vector2.down, 2f, slopeMask);
 
         Debug.DrawRay(hit.point, hit.normal, Color.green);
 
@@ -193,6 +231,11 @@ public class Movement2d : MovementController
         if (!(res.x > 0.01 || res.x < -0.01))
         {
             res.x = 0;
+        }
+
+        if (!(res.y > 0.01 || res.y < -0.01))
+        {
+            res.y = 0;
         }
 
         return res;

@@ -13,7 +13,7 @@ public class Slime_01 : Player
     [SerializeField]
     private Animator animator;
     [SerializeField]
-    private Movement2d playerMovement2D;
+    private MyAnimationController myAnimationController;
     [SerializeField]
     private float slopeSpeed;
 
@@ -47,11 +47,12 @@ public class Slime_01 : Player
 
     public void FixedUpdate()
     {
+        myAnimationController.CanSetAnimation = !Rolling;
+
         if (Rolling)
         {
+            animator.SetBool("RollingIdle", movement2D.GetVelocity().x == 0);
             CheckBoost();
-
-            animator.SetBool("Stopped", movement2D.GetVelocity().x == 0);
         }
     }
 
