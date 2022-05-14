@@ -44,12 +44,12 @@ public abstract class Player : MonoBehaviour
         movement2D.SetVelocity(new Vector2(0,0));
     }
 
-    public void GotHit(int damage, bool isFromRight, float knockBackDuration)
+    public void GotHit(int damage, float knockBackDuration)
     {
         hitSound.PlayDelayed(0);
         canMove = false;
         onKnockBack = true;
-        movement2D.KnockBack(isFromRight);
+        movement2D.KnockBack();
         Invoke("OnKnockBackEnd", knockBackDuration);
     }
 

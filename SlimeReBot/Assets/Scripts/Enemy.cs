@@ -56,15 +56,14 @@ public class Enemy : MovementController
 
     private void Collided(Player p)
     {
-        bool isFromRight;
         Vector2 impulse;
-
-        isFromRight = p.transform.position.x < this.transform.position.x;
-        p.GotHit(1, isFromRight, this.knockBackDuration);
+        p.GotHit(1, knockBackDuration);
 
         impulse = new Vector2(rb.velocity.x, 5f);
 
-        if((flipped == 1 && p.transform.position.x > this.transform.position.x) || (flipped == -1 && p.transform.position.x < this.transform.position.x))
+        if((flipped == 1 &&
+            p.transform.position.x > transform.position.x) ||
+            (flipped == -1 && p.transform.position.x < transform.position.x))
         {
             InvertDirection();
         } 
@@ -79,13 +78,13 @@ public class Enemy : MovementController
 
     private void InvertDirection()
     {
-        if (this.transform.rotation.y == 0)
+        if (transform.rotation.y == 0)
         {
-            this.transform.rotation = new Quaternion(0, 180, 0, Quaternion.identity.w);
+            transform.rotation = new Quaternion(0, 180, 0, Quaternion.identity.w);
         }
         else
         {
-            this.transform.rotation = new Quaternion(0, 0, 0, Quaternion.identity.w);
+            transform.rotation = new Quaternion(0, 0, 0, Quaternion.identity.w);
         }
 
         flipped *= -1;

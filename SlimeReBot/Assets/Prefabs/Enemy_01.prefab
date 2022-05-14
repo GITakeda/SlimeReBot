@@ -104,9 +104,9 @@ GameObject:
   - component: {fileID: 3099074149642574517}
   - component: {fileID: 3099074149642574516}
   - component: {fileID: 3099074149642574518}
-  - component: {fileID: 3099074149642574514}
   - component: {fileID: 1882697363}
   - component: {fileID: 720842714}
+  - component: {fileID: 3099074149642574514}
   m_Layer: 0
   m_Name: Enemy_01
   m_TagString: Untagged
@@ -206,30 +206,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!114 &3099074149642574514
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3099074149642574513}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 193bd18175c4e964dbbeb0d970d961c5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  wallCheck: {fileID: 116046650}
-  walkingCheck: {fileID: 1329191443}
-  groundCheck: {fileID: 3099074149300540204}
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 1792
-  rb: {fileID: 3099074149642574518}
-  speed: 2
-  jumpHeight: 0
-  knockBackDuration: 0.5
-  knockBack: {x: 0, y: 0}
-  animator: {fileID: 720842714}
 --- !u!70 &1882697363
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -266,3 +242,27 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &3099074149642574514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3099074149642574513}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 193bd18175c4e964dbbeb0d970d961c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wallCheck: {fileID: 116046650}
+  walkingCheck: {fileID: 1329191443}
+  groundCheck: {fileID: 3099074149300540204}
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 1792
+  rb: {fileID: 3099074149642574518}
+  speed: 2
+  jumpHeight: 0
+  knockBackDuration: 0.5
+  knockBack: {x: 0, y: 0}
+  animator: {fileID: 720842714}

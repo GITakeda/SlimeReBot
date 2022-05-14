@@ -16,7 +16,7 @@ public class MyAnimationController : MonoBehaviour
     private bool canSetAnimation;
     public bool CanSetAnimation { get { return canSetAnimation; } set { canSetAnimation = value; } }
 
-    void Update()
+    private void FixedUpdate()
     {
         Vector2 velocity = movement2D.GetVelocity();
         bool falling = movement2D.IsFalling;

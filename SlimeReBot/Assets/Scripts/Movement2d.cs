@@ -116,7 +116,7 @@ public class Movement2d : MovementController
         IsJumping = false;
     }
 
-    public void KnockBack(bool isFromRight)
+    public void KnockBack()
     {
         rb.velocity = new Vector2(knockBack.x - rb.velocity.x , knockBack.y);
     }
@@ -137,7 +137,7 @@ public class Movement2d : MovementController
 
     public bool CheckGround(LayerMask groundLayer, Vector2 size, Vector2 pos)
     {
-        Vector2 checkSize = size - new Vector2(0.02f, 0);
+        Vector2 checkSize = size - new Vector2(0.04f, 0);
         Vector2 checkPos = pos - new Vector2(0, 0.1f);
 
         Collider2D hit = Physics2D.OverlapCapsule(checkPos,
