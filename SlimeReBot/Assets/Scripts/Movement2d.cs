@@ -3,7 +3,7 @@
 public class Movement2d : MovementController
 {
     [SerializeField]
-    private AnimationController animator;
+    private MyAnimationController animator;
     [SerializeField]
     private AudioSource jumpSound;
     [SerializeField]
@@ -29,13 +29,13 @@ public class Movement2d : MovementController
     private bool materialCanBeChanged = true;
     private bool isOnSlope = false;
     private Vector2 slopeCheckPos;
+    private Vector2 lastSlopeCheckPos;
     #endregion
 
-    private Vector2 debugPoint;
-
     private bool isJumping = false;
+
     public bool IsGrounded { get { return CheckBox(groundCheck, groundLayer, p.GetActiveCollider().size - new Vector2(0.02f, 0), transform.position - new Vector3(0, 0.1f, 0));} }
-    public bool IsFalling { get { return rb.velocity.y < 0 && !IsGrounded; } }
+    public bool IsFalling { get { return GetVelocity().y < 0 && !IsGrounded; } }
     public bool IsJumping { get { return isJumping && !IsFalling; } set { isJumping = value; } }
     public bool MaterialCanBeChanged { get { return materialCanBeChanged;  } set { materialCanBeChanged = value; }  }
 
@@ -106,7 +106,6 @@ public class Movement2d : MovementController
     {
         jumpSound.Play();
         rb.velocity = new Vector2(rb.velocity.x, jumpHeight);
-        animator.SetJumping();
         IsJumping = true;
     }
 
@@ -141,7 +140,28 @@ public class Movement2d : MovementController
         Collider2D hit = Physics2D.OverlapCapsule(pos, new Vector2(size.x, size.y), CapsuleDirection2D.Horizontal, 0f, groundLayer);
         if (hit)
         {
-            slopeCheckPos = hit.ClosestPoint(pos);
+            Vector2 newSlopeCheckPos = hit.ClosestPoint(pos);
+            if(GetVelocity().y < 0)
+            {
+                if ((transform.position - new Vector3(newSlopeCheckPos.x, newSlopeCheckPos.y, 0)).x < -0.01f || (transform.position - new Vector3(newSlopeCheckPos.x, newSlopeCheckPos.y, 0)).x > 0.01f)
+                {
+                    lastSlopeCheckPos = slopeCheckPos;
+                    slopeCheckPos = newSlopeCheckPos;
+                    Debug.Log("TO ENTRANDO NO FI");
+                }
+                else if ((transform.position - new Vector3(newSlopeCheckPos.x, newSlopeCheckPos.y, 0)).y > 0.38f)
+                {
+                    Debug.Log("TO ENTRANDO NO ESLE");
+                    slopeCheckPos = lastSlopeCheckPos;
+                }
+            }
+            else
+            {
+                lastSlopeCheckPos = slopeCheckPos;
+                slopeCheckPos = newSlopeCheckPos;
+            }
+            Debug.Log(GetVelocity().y);
+            //Debug.Log("POS = " + (transform.position - new Vector3(slopeCheckPos.x, slopeCheckPos.y, 0)) + " x = " + (transform.position - new Vector3(newSlopeCheckPos.x, newSlopeCheckPos.y, 0)).x);
         }
         return hit;
     }
@@ -153,7 +173,7 @@ public class Movement2d : MovementController
 
         //Vector2 checkPos = transform.position - new Vector3(0, p.GetActiveCollider().size.y / 2);
 
-        RaycastHit2D hit = Physics2D.Raycast(slopeCheckPos, Vector2.down, 0.5f, slopeMask);
+        RaycastHit2D hit = Physics2D.Raycast(slopeCheckPos, Vector2.down, 5f, slopeMask);
 
         Debug.DrawRay(hit.point, hit.normal, Color.green);
 
@@ -193,6 +213,11 @@ public class Movement2d : MovementController
         if (!(res.x > 0.01 || res.x < -0.01))
         {
             res.x = 0;
+        }
+
+        if (!(res.y > 0.01 || res.y < -0.01))
+        {
+            res.y = 0;
         }
 
         return res;

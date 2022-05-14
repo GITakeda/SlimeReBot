@@ -6,10 +6,10 @@ using UnityEngine.Tilemaps;
 public class DestructibleTileMap : MonoBehaviour
 {
     [SerializeField]
-    private TilemapCollider2D collider;
+    private TilemapCollider2D myCollider;
 
     [SerializeField]
-    private TilemapRenderer renderer;
+    private TilemapRenderer myRenderer;
 
     public void Activate()
     {
@@ -18,8 +18,8 @@ public class DestructibleTileMap : MonoBehaviour
 
     public void Break()
     {
-        collider.enabled = false;
-        renderer.enabled = false;   
+        myCollider.enabled = false;
+        myRenderer.enabled = false;   
     }
 
 

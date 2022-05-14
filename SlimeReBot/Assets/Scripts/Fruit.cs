@@ -11,7 +11,7 @@ public class Fruit : MonoBehaviour, ICollectable
     private AudioSource audioSource;
 
     [SerializeField]
-    private Collider2D collider;
+    private Collider2D myCollider;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -23,7 +23,7 @@ public class Fruit : MonoBehaviour, ICollectable
 
     public void Collect()
     {
-        collider.enabled = false;
+        myCollider.enabled = false;
         audioSource.Play();
         Player.fruitsCollected++;
         animator.enabled = true;
