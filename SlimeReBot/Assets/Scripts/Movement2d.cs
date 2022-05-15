@@ -47,20 +47,25 @@ public class Movement2d : MovementController
 
     void Update()
     {
+        if (IsGrounded && Input.GetAxis("Jump") <= 0)
+        {
+            IsJumping = false;
+        }
+
         if (IsJumping && Input.GetAxis("Jump") <= 0)
         {
             StopJump();
+
+        }
+        else if (IsGrounded && !IsJumping && Input.GetAxis("Jump") > 0)
+        {
+            Jump(jumpHeight);
         }
 
         if (!p.CanMove)
         {
             horizontalInput = 0;
             return;
-        }
-
-        if (IsGrounded && !IsJumping && Input.GetAxis("Jump") > 0)
-        {
-            Jump(jumpHeight);
         }
 
         horizontalInput = Input.GetAxis("Horizontal");
@@ -113,7 +118,6 @@ public class Movement2d : MovementController
     public void StopJump()
     {
         rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y / 4);
-        IsJumping = false;
     }
 
     public void KnockBack()
@@ -141,10 +145,23 @@ public class Movement2d : MovementController
         Vector2 checkPos = pos - new Vector2(0, 0.1f);
 
         Collider2D hit = Physics2D.OverlapCapsule(checkPos,
-            new Vector2(checkSize.x, checkSize.y),
+            checkSize,
             CapsuleDirection2D.Horizontal,
             0f,
             groundLayer);
+
+        if (hit)
+        {
+            float hitHeight = hit.ClosestPoint(transform.position).y - transform.position.y;
+
+            float groundCheckOffset = p.GetActiveCollider().size.y * 4 / 10 * -1;
+
+            if (hitHeight > groundCheckOffset)
+            {
+                isGrounded = null;
+                return false;
+            }
+        }
 
         isGrounded = hit;
 
@@ -191,7 +208,7 @@ public class Movement2d : MovementController
         isOnSlope = false;
         Vector2 normalReturn = new Vector2();
 
-        RaycastHit2D hit = Physics2D.Raycast(slopeCheckPos, Vector2.down, 2f, slopeMask);
+        RaycastHit2D hit = Physics2D.Raycast(slopeCheckPos, Vector2.down, 0.5f, slopeMask);
 
         Debug.DrawRay(hit.point, hit.normal, Color.green);
 

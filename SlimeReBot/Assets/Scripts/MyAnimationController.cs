@@ -34,6 +34,7 @@ public class MyAnimationController : MonoBehaviour
         if (canSetAnimation)
         {
             animator.SetBool("Falling", falling);
+            animator.SetBool("Grounded", movement2D.IsGrounded);
             animator.SetBool("Jumping", movement2D.IsJumping);
             animator.SetBool("Walking", velocity.normalized.x != 0);
         }
