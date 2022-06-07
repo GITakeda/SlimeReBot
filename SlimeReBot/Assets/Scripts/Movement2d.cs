@@ -16,6 +16,8 @@ public class Movement2d : MovementController
     protected LayerMask slopeMask;
     [SerializeField]
     private Vector2 groundCheckSize;
+    [SerializeField]
+    private Transform transform;
 
     public float JumpHeight { get { return jumpHeight; } set { jumpHeight = value; } }
     public Transform GroundCheck { get { return groundCheck; } set { groundCheck = value; } }
@@ -24,6 +26,7 @@ public class Movement2d : MovementController
 
     #region slopes
     private Vector2 slopePrepNormalized;
+    private Vector2 slopeDelta;
     private bool normalizeSlope = true;
     public bool NormalizeSlope { get { return normalizeSlope; } set { normalizeSlope = value; } }
     private bool materialCanBeChanged = true;
@@ -35,6 +38,7 @@ public class Movement2d : MovementController
     private bool isJumping = false;
 
     private Collider2D isGrounded;
+    public Vector2 SlopeDelta { get { return slopeDelta; } }
     public bool IsGrounded { get { return isGrounded; } }
     public bool IsFalling { get { return GetVelocity().y < 0 && !IsGrounded; } }
     public bool IsJumping { get { return isJumping && !IsFalling; } set { isJumping = value; } }
@@ -108,66 +112,6 @@ public class Movement2d : MovementController
         rb.velocity = newVelocity;
     }
 
-    public void Jump(float jumpHeight)
-    {
-        jumpSound.Play();
-        rb.velocity = new Vector2(rb.velocity.x, jumpHeight);
-        IsJumping = true;
-    }
-
-    public void StopJump()
-    {
-        rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y / 4);
-    }
-
-    public void KnockBack()
-    {
-        rb.velocity = new Vector2(knockBack.x - rb.velocity.x , knockBack.y);
-    }
-
-    public void ResetPosition()
-    {
-        rb.velocity = new Vector2(0, 0); 
-    }
-
-    public void ResetVelocity()
-    {
-        rb.velocity = new Vector2(0, rb.velocity.y);
-    }
-
-    public static Collider2D CheckSphere(Transform groundCheck, LayerMask groundLayer, float size = 0.05f) {
-        return Physics2D.OverlapCircle(groundCheck.position, size, groundLayer);
-    }
-
-    public bool CheckGround(LayerMask groundLayer, Vector2 size, Vector2 pos)
-    {
-        Vector2 checkSize = size - new Vector2(0.04f, 0);
-        Vector2 checkPos = pos - new Vector2(0, 0.1f);
-
-        Collider2D hit = Physics2D.OverlapCapsule(checkPos,
-            checkSize,
-            CapsuleDirection2D.Horizontal,
-            0f,
-            groundLayer);
-
-        if (hit)
-        {
-            float hitHeight = hit.ClosestPoint(transform.position).y - transform.position.y;
-
-            float groundCheckOffset = p.GetActiveCollider().size.y * 4 / 10 * -1;
-
-            if (hitHeight > groundCheckOffset)
-            {
-                isGrounded = null;
-                return false;
-            }
-        }
-
-        isGrounded = hit;
-
-        return hit;
-    }
-
     private void DefineSlopeCheckPosition(Collider2D groundHit, Vector2 pos)
     {
         Vector2 playerPosition = transform.position;
@@ -201,6 +145,14 @@ public class Movement2d : MovementController
         }
     }
 
+    private void SetMaterial(PhysicsMaterial2D material)
+    {
+        if (materialCanBeChanged)
+        {
+            rb.sharedMaterial = material;
+        }
+    }
+
     public Vector2 CheckSlope()
     {
         DefineSlopeCheckPosition(isGrounded, transform.position);
@@ -222,6 +174,8 @@ public class Movement2d : MovementController
 
             Debug.DrawRay(hit.point, Vector2.Perpendicular(hit.normal).normalized, Color.black);
         }
+
+        slopeDelta = normalReturn;
 
         return normalReturn;
     }
@@ -268,11 +222,69 @@ public class Movement2d : MovementController
         return horizontalInput;
     }
 
-    private void SetMaterial(PhysicsMaterial2D material)
+    public void SetPosition(Vector2 pos)
     {
-        if (materialCanBeChanged)
+        transform.position = transform.position + (Vector3) pos;
+    }
+
+    public void Jump(float jumpHeight)
+    {
+        jumpSound.Play();
+        rb.velocity = new Vector2(rb.velocity.x, jumpHeight);
+        IsJumping = true;
+    }
+
+    public void StopJump()
+    {
+        rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y / 4);
+    }
+
+    public void KnockBack()
+    {
+        rb.velocity = new Vector2(knockBack.x - rb.velocity.x, knockBack.y);
+    }
+
+    public void ResetPosition()
+    {
+        rb.velocity = new Vector2(0, 0);
+    }
+
+    public void ResetVelocity()
+    {
+        rb.velocity = new Vector2(0, rb.velocity.y);
+    }
+
+    public static Collider2D CheckSphere(Transform groundCheck, LayerMask groundLayer, float size = 0.05f)
+    {
+        return Physics2D.OverlapCircle(groundCheck.position, size, groundLayer);
+    }
+
+    public bool CheckGround(LayerMask groundLayer, Vector2 size, Vector2 pos)
+    {
+        Vector2 checkSize = size - new Vector2(0.04f, 0);
+        Vector2 checkPos = pos - new Vector2(0, 0.1f);
+
+        Collider2D hit = Physics2D.OverlapCapsule(checkPos,
+            checkSize,
+            CapsuleDirection2D.Horizontal,
+            0f,
+            groundLayer);
+
+        if (hit)
         {
-            rb.sharedMaterial = material;
+            float hitHeight = hit.ClosestPoint(transform.position).y - transform.position.y;
+
+            float groundCheckOffset = p.GetActiveCollider().size.y * 4 / 10 * -1;
+
+            if (hitHeight > groundCheckOffset)
+            {
+                isGrounded = null;
+                return false;
+            }
         }
+
+        isGrounded = hit;
+
+        return hit;
     }
 }

@@ -17,8 +17,11 @@ public class Slime_01 : Player
     [SerializeField]
     private float slopeSpeed;
 
+    private Vector2 boost;
+    private Vector2 currentBoost;
     private bool rolling = false;
     private State state = State.normal;
+    private int direction = 0;
 
     enum State
     {
@@ -52,17 +55,22 @@ public class Slime_01 : Player
         if (Rolling)
         {
             animator.SetBool("RollingIdle", movement2D.GetVelocity().x == 0);
-            CheckBoost();
+            CheckSlope();
         }
     }
 
     protected override void HandleInput()
     {
-        if (Input.GetAxis("Vertical") < 0)
+        if (Input.GetAxis("Vertical") < 0 && !Rolling)
         {
             Rolling = true;
             animator.runtimeAnimatorController = rollingAnimation;
             state = State.normal;
+            //TODO revisar o inicio do rolamento
+            if (movement2D.IsGrounded)
+            {
+                movement2D.SetPosition(new Vector2(0, -0.06f));
+            }
             movement2D.NormalizeSlope = false;
             movement2D.SetNoFriction();
             movement2D.MaterialCanBeChanged = false;
@@ -76,66 +84,73 @@ public class Slime_01 : Player
         }
     }
 
-    private void CheckBoost()
+    private void CheckSlope()
     {
-        Vector2 slope = movement2D.CheckSlope();
-        Vector2 boost = new Vector2(slope.x, slope.x);
+        Vector2 slope = movement2D.SlopeDelta;
+        
+        if (state == State.normal){
+            direction = CheckDirection(slope);
+        }
+
+        switch (state)
+        {
+            case State.normal:
+                if (direction != 0)
+                {
+                    state = State.beingBoosted;
+                    direction = CheckDirection(slope);
+                    CheckBoost(slope);
+                }
+                break;
+            case State.beingBoosted:
+                if (CheckDirection(slope) != 0 && CheckDirection(slope) != direction)
+                {
+                    state = State.wasBoosted;
+                }
+                else
+                {
+                    CheckBoost(slope);
+                    CalculateVelocity();
+                }
+                break;
+            case State.wasBoosted:
+                direction = CheckDirection(slope);
+                CalculateVelocity();
+                if (direction == 0)
+                {
+                    state = State.normal;
+                }
+                break;
+        }
+    }
+
+    private void CalculateVelocity()
+    {
+        movement2D.SetVelocity(movement2D.GetVelocity() + new Vector2(boost.x * slopeSpeed, boost.y));
+    }
+
+    private void CheckBoost(Vector2 slope)
+    {
+        boost = new Vector2(slope.x, slope.x);
 
         if (boost.y > 0)
         {
             boost.y *= -1;
         }
+    }
 
-        if (slope.x != 0 && (state == State.normal || state == State.beingBoosted))
+    private int CheckDirection(Vector2 slope)
+    {
+        if (slope.x > 0.01f)
         {
-            movement2D.SetVelocity(movement2D.GetVelocity() + boost);
-            state = State.beingBoosted;
+            return 1;
+        }
+        else if (slope.x < -0.01f)
+        {
+            return -1;
         }
 
-        if (state == State.beingBoosted && slope.x == 0)
-        {
-            movement2D.SetVelocity(movement2D.GetVelocity() + new Vector2(10f * boost.normalized.x, 0));
-            state = State.wasBoosted;
-        }
-
-        if (state == State.wasBoosted && movement2D.GetVelocity().x < 2.5f)
-        {
-            state = State.normal;
-        }
-
-
-        //switch (state)
-        //{
-        //    case State.normal:
-        //        if (slope.x != 0)
-        //        {
-        //            state = State.beingBoosted;
-        //            Debug.Log(State.beingBoosted.ToString());
-        //        }
-        //        break;
-        //    case State.beingBoosted:
-        //        if (slope.x == 0)
-        //        {
-        //            state = State.wasBoosted;
-        //            return;
-        //        }
-        //        float lerped = Mathf.Lerp(movement2D.GetVelocity().x, 15f * boost.x, 0.01f);
-        //        boost.x = lerped;
-        //        movement2D.SetVelocity(movement2D.GetVelocity() + boost);
-        //        break;
-        //    case State.wasBoosted:
-        //        if (velocity.x < 2.5f)
-        //        {
-        //            state = State.normal;
-        //            return;
-        //        }
-        //        Vector2 lerpedVelocity = Vector2.Lerp(velocity, new Vector2(0, velocity.y), 0.01f);
-        //        if (lerpedVelocity.x > 0.01f || lerpedVelocity.x < -0.01f)
-        //        {
-        //            movement2D.SetVelocity(lerpedVelocity);
-        //        }
-        //        break;
-        //}
+        return 0;
     }
 
     public override void OnKnockBackEnd()
