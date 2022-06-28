@@ -16,6 +16,8 @@ public class Slime_01 : Player
     private MyAnimationController myAnimationController;
     [SerializeField]
     private float slopeSpeed;
+    [SerializeField]
+    private float topSpeed;
 
     private Vector2 boost;
     private Vector2 currentBoost;
@@ -87,23 +89,21 @@ public class Slime_01 : Player
     private void CheckSlope()
     {
         Vector2 slope = movement2D.SlopeDelta;
-        
-        if (state == State.normal){
-            direction = CheckDirection(slope);
-        }
+
+        int curDirection = CheckDirection(slope);
 
         switch (state)
         {
             case State.normal:
-                if (direction != 0)
+                if (curDirection != 0)
                 {
                     state = State.beingBoosted;
-                    direction = CheckDirection(slope);
+                    direction = curDirection;
                     CheckBoost(slope);
                 }
                 break;
             case State.beingBoosted:
-                if (CheckDirection(slope) != 0 && CheckDirection(slope) != direction)
+                if (curDirection != 0 && curDirection != direction)
                 {
                     state = State.wasBoosted;
                 }
@@ -114,9 +114,8 @@ public class Slime_01 : Player
                 }
                 break;
             case State.wasBoosted:
-                direction = CheckDirection(slope);
                 CalculateVelocity();
-                if (direction == 0)
+                if (curDirection == 0)
                 {
                     state = State.normal;
                 }
@@ -126,16 +125,39 @@ public class Slime_01 : Player
 
     private void CalculateVelocity()
     {
-        movement2D.SetVelocity(movement2D.GetVelocity() + new Vector2(boost.x * slopeSpeed, boost.y));
+        Vector2 newVelocity = movement2D.GetVelocity() + new Vector2(currentBoost.x * slopeSpeed, currentBoost.y);
+
+        if(Mathf.Abs(newVelocity.x) > topSpeed)
+        {
+            newVelocity.x = topSpeed * direction;
+        }
+
+        if(state == State.wasBoosted)
+        {
+            newVelocity.y = movement2D.GetVelocity().y;
+        }
+
+        movement2D.SetVelocity(newVelocity);
     }
 
     private void CheckBoost(Vector2 slope)
     {
         boost = new Vector2(slope.x, slope.x);
 
-        if (boost.y > 0)
+        if (boost.y > 0.1)
         {
             boost.y *= -1;
+        }
+
+        if(movement2D.GetVelocity().y > 0.1)
+        {
+            boost.y = 0;
+            currentBoost.y = 0;
+        }
+
+        if (boost.x > 0.1 || boost.x < -0.1)
+        {
+            currentBoost = boost;
         }
     }
 

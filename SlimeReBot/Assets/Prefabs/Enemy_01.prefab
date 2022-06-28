@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 116046650}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: WallCheck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -40,7 +40,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1329191443}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: WalkingCheck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -71,7 +71,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3099074149300540204}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: GroundCheck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -107,7 +107,7 @@ GameObject:
   - component: {fileID: 1882697363}
   - component: {fileID: 720842714}
   - component: {fileID: 3099074149642574514}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Enemy_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -259,7 +259,7 @@ MonoBehaviour:
   groundCheck: {fileID: 3099074149300540204}
   groundLayer:
     serializedVersion: 2
-    m_Bits: 1792
+    m_Bits: 3840
   rb: {fileID: 3099074149642574518}
   speed: 2
   jumpHeight: 0
